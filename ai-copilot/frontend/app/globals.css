@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply font-sans text-neutral-900 dark:text-neutral-100;
+  }
+
+  * {
+    @apply border-neutral-200 dark:border-neutral-700;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl;
+  }
+
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5;
+  }
+
+  .gradient-primary {
+    @apply bg-gradient-to-r from-primary-500 to-primary-600;
+  }
+
+  .gradient-hero {
+    @apply bg-gradient-to-br from-primary-500 via-primary-600 to-primary-800;
+  }
+
+  .input-focus {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-accent-500;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.neutral.300') transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: theme('colors.neutral.300');
+    border-radius: 3px;
+  }
+
+  .dark .scrollbar-thin {
+    scrollbar-color: theme('colors.neutral.600') transparent;
+  }
+
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: theme('colors.neutral.600');
+  }
+
+  .animate-in {
+    animation: fadeIn 0.2s ease-in-out;
+  }
+}
