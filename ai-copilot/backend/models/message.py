@@ -7,8 +7,8 @@ from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import JSON, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from backend.models.base import Base
-from backend.models.enums import ChannelEnum, SenderTypeEnum
+from models.base import Base
+from models.enums import ChannelEnum, SenderTypeEnum
 
 
 class Message(Base):

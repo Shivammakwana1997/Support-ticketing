@@ -5,8 +5,8 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.models.audit_log import AuditLog
-from backend.repositories.base import BaseRepository
+from models.audit_log import AuditLog
+from repositories.base import BaseRepository
 
 
 class AuditLogRepository(BaseRepository[AuditLog]):

@@ -9,11 +9,11 @@ import structlog
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.dependencies.auth import get_current_user, get_current_user_ws
-from api.dependencies.database import get_db, get_db_ws
+from api.dependencies.auth import get_current_user
+from api.dependencies.database import get_db
 from core.exceptions import NotFoundError
 from models.user import User
-from models.enums import SenderType
+from models.enums import SenderTypeEnum
 from schemas.message import MessageResponse
 from services.agents.chatbot import chatbot_service
 from services.conversation import conversation_service
@@ -99,7 +99,7 @@ async def websocket_chat(
                     db=db,
                     tenant_id=tenant_id,
                     conversation_id=conversation_id,
-                    sender_type=SenderType.CUSTOMER,
+                    sender_type=SenderTypeEnum.CUSTOMER,
                     sender_id=data.get("sender_id", str(user.id)),
                     content=content,
                 )
@@ -124,7 +124,7 @@ async def websocket_chat(
                         db=db,
                         tenant_id=tenant_id,
                         conversation_id=conversation_id,
-                        sender_type=SenderType.AI,
+                        sender_type=SenderTypeEnum.AI,
                         sender_id="system",
                         content=ai_response,
                     )
@@ -203,7 +203,7 @@ async def chat_completion(
             db=db,
             tenant_id=current_user.tenant_id,
             conversation_id=conversation_id,
-            sender_type=SenderType.CUSTOMER,
+            sender_type=SenderTypeEnum.CUSTOMER,
             sender_id=str(current_user.id),
             content=message,
         )
@@ -224,7 +224,7 @@ async def chat_completion(
             db=db,
             tenant_id=current_user.tenant_id,
             conversation_id=conversation_id,
-            sender_type=SenderType.AI,
+            sender_type=SenderTypeEnum.AI,
             sender_id="system",
             content=ai_response,
         )

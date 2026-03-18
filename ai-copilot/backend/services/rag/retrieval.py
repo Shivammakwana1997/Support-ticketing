@@ -42,7 +42,7 @@ class RetrievalService:
     """Handles semantic search over knowledge base chunks using pgvector."""
 
     def __init__(self) -> None:
-        self.chunk_repo = KnowledgeChunkRepository()
+        pass
 
     async def search(
         self,

@@ -4,8 +4,8 @@ from typing import Any
 
 import redis.asyncio as aioredis
 
-from backend.core.config import settings
-from backend.core.logging import get_logger
+from core.config import settings
+from core.logging import get_logger
 
 logger = get_logger(__name__)
 

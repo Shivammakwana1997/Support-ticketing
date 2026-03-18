@@ -6,8 +6,8 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.models.user import User
-from backend.repositories.base import BaseRepository
+from models.user import User
+from repositories.base import BaseRepository
 
 
 class UserRepository(BaseRepository[User]):

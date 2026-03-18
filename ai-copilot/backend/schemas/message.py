@@ -6,7 +6,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from backend.models.enums import ChannelEnum, SenderTypeEnum
+from models.enums import ChannelEnum, SenderTypeEnum
 
 
 class MessageCreate(BaseModel):

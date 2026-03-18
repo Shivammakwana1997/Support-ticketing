@@ -6,9 +6,9 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.models.conversation import Conversation
-from backend.models.enums import ConversationStatusEnum
-from backend.repositories.base import BaseRepository
+from models.conversation import Conversation
+from models.enums import ConversationStatusEnum
+from repositories.base import BaseRepository
 
 
 class ConversationRepository(BaseRepository[Conversation]):

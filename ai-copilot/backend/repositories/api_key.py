@@ -6,8 +6,8 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.models.api_key import APIKey
-from backend.repositories.base import BaseRepository
+from models.api_key import APIKey
+from repositories.base import BaseRepository
 
 
 class APIKeyRepository(BaseRepository[APIKey]):

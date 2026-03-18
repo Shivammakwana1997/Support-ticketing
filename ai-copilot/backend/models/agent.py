@@ -7,8 +7,8 @@ from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSON, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from backend.models.base import Base
-from backend.models.enums import AgentStatusEnum
+from models.base import Base
+from models.enums import AgentStatusEnum
 
 
 class Agent(Base):

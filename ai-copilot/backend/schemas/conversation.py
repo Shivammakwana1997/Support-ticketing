@@ -6,7 +6,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from backend.models.enums import ChannelEnum, ConversationStatusEnum
+from models.enums import ChannelEnum, ConversationStatusEnum
 
 
 class ConversationCreate(BaseModel):

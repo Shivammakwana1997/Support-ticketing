@@ -14,16 +14,15 @@ from api.dependencies.auth import get_current_user, require_admin
 from api.dependencies.database import get_db
 from core.exceptions import NotFoundError, ForbiddenError
 from models.user import User
-from models.enums import UserRole
+from models.enums import UserRoleEnum
 from schemas.admin import (
-    AgentResponse,
-    AgentUpdateRequest,
     AIConfigResponse,
-    AIConfigUpdateRequest,
+    AIConfigUpdate,
     APIKeyResponse,
-    APIKeyCreateRequest,
+    APIKeyCreate,
     UsageResponse,
 )
+from schemas.agent import AgentResponse, AgentUpdate
 
 logger = structlog.get_logger(__name__)
 
@@ -61,7 +60,7 @@ async def list_agents(
 @router.patch("/agents/{agent_id}", response_model=AgentResponse)
 async def update_agent(
     agent_id: str,
-    request: AgentUpdateRequest,
+    request: AgentUpdate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin),
 ) -> AgentResponse:
@@ -139,7 +138,7 @@ async def get_ai_config(
 
 @router.patch("/config/ai", response_model=AIConfigResponse)
 async def update_ai_config(
-    request: AIConfigUpdateRequest,
+    request: AIConfigUpdate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin),
 ) -> AIConfigResponse:
@@ -206,7 +205,7 @@ async def list_api_keys(
 
 @router.post("/api-keys", response_model=APIKeyResponse, status_code=status.HTTP_201_CREATED)
 async def create_api_key(
-    request: APIKeyCreateRequest,
+    request: APIKeyCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin),
 ) -> APIKeyResponse:
@@ -255,12 +254,12 @@ async def create_api_key(
         )
 
 
-@router.delete("/api-keys/{key_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/api-keys/{key_id}")
 async def delete_api_key(
     key_id: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin),
-) -> None:
+) -> dict:
     """Delete an API key."""
     try:
         from repositories.api_key import APIKeyRepository

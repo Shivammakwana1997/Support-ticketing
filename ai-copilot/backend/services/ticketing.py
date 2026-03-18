@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.exceptions import NotFoundError, ForbiddenError
 from integrations.openai_client import openai_client
-from models.enums import AgentStatus, Priority, TicketStatus
+from models.enums import AgentStatusEnum, PriorityEnum, TicketStatusEnum
 from models.ticket import Ticket
 from repositories.agent import AgentRepository
 from repositories.conversation import ConversationRepository
@@ -32,10 +32,7 @@ class TicketingService:
     summarisation, and duplicate detection."""
 
     def __init__(self) -> None:
-        self.ticket_repo = TicketRepository()
-        self.conversation_repo = ConversationRepository()
-        self.agent_repo = AgentRepository()
-        self.message_repo = MessageRepository()
+        pass
 
     # ------------------------------------------------------------------
     # 1. Create
@@ -49,7 +46,7 @@ class TicketingService:
         subject: str,
         description: str = "",
         conversation_id: str | None = None,
-        priority: Priority = Priority.MEDIUM,
+        priority: PriorityEnum = PriorityEnum.MEDIUM,
         metadata: dict | None = None,
     ) -> Ticket:
         """Create a new support ticket with an auto-generated ticket number."""
@@ -59,6 +56,29 @@ class TicketingService:
             subject=subject,
         )
         log.info("ticketing.create_ticket.start")
+
+        from services.nlp.intent import intent_service
+        from models.enums import TicketCategoryEnum, PriorityEnum
+
+        # AI Automatic PriorityEnum & Category Assignment
+        category = TicketCategoryEnum.GENERAL
+
+        # In a real app we'd pass the actual message content, but here we use subject as a proxy for the demo
+        intent_result = await intent_service.detect_intent(subject)
+        detected_intent = intent_result.intent
+
+        if detected_intent == "fraud":
+            priority = PriorityEnum.URGENT
+            category = TicketCategoryEnum.FRAUD
+        elif detected_intent == "otp_issue":
+            priority = PriorityEnum.HIGH
+            category = TicketCategoryEnum.OTP_ISSUE
+        elif detected_intent == "password_reset":
+            priority = PriorityEnum.HIGH
+            category = TicketCategoryEnum.PASSWORD_RESET
+        elif detected_intent == "technical":
+            priority = PriorityEnum.MEDIUM
+            category = TicketCategoryEnum.TECHNICAL
 
         ticket_number = _generate_ticket_number()
 
@@ -70,7 +90,8 @@ class TicketingService:
             ticket_number=ticket_number,
             conversation_id=conversation_id,
             priority=priority,
-            status=TicketStatus.OPEN,
+            category=category,
+            status=TicketStatusEnum.OPEN,
             metadata=metadata or {},
         )
 
@@ -129,8 +150,8 @@ class TicketingService:
         self,
         db: AsyncSession,
         tenant_id: str,
-        status: TicketStatus | None = None,
-        priority: Priority | None = None,
+        status: TicketStatusEnum | None = None,
+        priority: PriorityEnum | None = None,
         assigned_to: str | None = None,
         customer_id: str | None = None,
         page: int = 1,
@@ -252,7 +273,7 @@ class TicketingService:
             f"Subject: {ticket.subject}\n"
             f"Description: {ticket.description}\n"
             f"Status: {ticket.status}\n"
-            f"Priority: {ticket.priority}\n\n"
+            f"PriorityEnum: {ticket.priority}\n\n"
             f"Conversation:\n{conversation_text or '(no messages yet)'}"
         )
 
@@ -319,7 +340,7 @@ class TicketingService:
             "Do NOT include any text outside the JSON object.\n\n"
             f"Subject: {ticket.subject}\n"
             f"Description: {ticket.description}\n"
-            f"Priority: {ticket.priority}"
+            f"PriorityEnum: {ticket.priority}"
         )
 
         analysis_raw = await openai_client.chat_completion(
@@ -395,7 +416,7 @@ class TicketingService:
             ticket_id,
             TicketUpdate(
                 assigned_to=str(best_agent.id),
-                status=TicketStatus.IN_PROGRESS,
+                status=TicketStatusEnum.IN_PROGRESS,
             ),
         )
 

@@ -14,11 +14,11 @@ from api.dependencies.database import get_db
 from core.exceptions import NotFoundError
 from models.user import User
 from schemas.voice import (
-    TranscriptionResponse,
-    SynthesisRequest,
-    SynthesisResponse,
-    CallResponse,
-    CallCreateRequest,
+    TranscribeResponse,
+    SynthesizeRequest,
+    SynthesizeResponse,
+    VoiceCallResponse,
+    VoiceCallCreate,
     CallSummaryResponse,
 )
 from services.voice.transcription import transcription_service
@@ -29,12 +29,12 @@ logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/api/v1/voice", tags=["voice"])
 
 
-@router.post("/transcribe", response_model=TranscriptionResponse)
+@router.post("/transcribe", response_model=TranscribeResponse)
 async def transcribe_audio(
     file: UploadFile = File(...),
     language: str | None = Form(None),
     current_user: User = Depends(get_current_user),
-) -> TranscriptionResponse:
+) -> TranscribeResponse:
     """Transcribe an audio file to text."""
     try:
         audio_data = await file.read()
@@ -63,7 +63,7 @@ async def transcribe_audio(
             format=audio_format,
             text_length=len(result.get("text", "")),
         )
-        return TranscriptionResponse(**result)
+        return TranscribeResponse(**result)
 
     except HTTPException:
         raise
@@ -75,11 +75,11 @@ async def transcribe_audio(
         )
 
 
-@router.post("/synthesize", response_model=SynthesisResponse)
+@router.post("/synthesize", response_model=SynthesizeResponse)
 async def synthesize_speech(
-    request: SynthesisRequest,
+    request: SynthesizeRequest,
     current_user: User = Depends(get_current_user),
-) -> SynthesisResponse:
+) -> SynthesizeResponse:
     """Synthesize text to speech."""
     try:
         result = await synthesis_service.synthesize(
@@ -102,20 +102,20 @@ async def synthesize_speech(
                     text=request.text,
                     voice=request.voice or "alloy",
                 )
-                return SynthesisResponse(
+                return SynthesizeResponse(
                     audio_url=url,
                     format=request.response_format or "mp3",
                     duration_estimate_seconds=result.get("duration_estimate_seconds", 0.0),
                 )
             except Exception:
                 # Fallback: return metadata without URL
-                return SynthesisResponse(
+                return SynthesizeResponse(
                     audio_url="",
                     format=request.response_format or "mp3",
                     duration_estimate_seconds=result.get("duration_estimate_seconds", 0.0),
                 )
 
-        return SynthesisResponse(**result)
+        return SynthesizeResponse(**result)
 
     except Exception as e:
         logger.error("synthesis_failed", error=str(e))
@@ -125,12 +125,12 @@ async def synthesize_speech(
         )
 
 
-@router.get("/calls/{call_id}", response_model=CallResponse)
+@router.get("/calls/{call_id}", response_model=VoiceCallResponse)
 async def get_call(
     call_id: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> CallResponse:
+) -> VoiceCallResponse:
     """Get voice call details."""
     try:
         from repositories.voice_call import VoiceCallRepository
@@ -143,7 +143,7 @@ async def get_call(
         if getattr(call, "tenant_id", None) != current_user.tenant_id:
             raise NotFoundError(f"Call {call_id} not found")
 
-        return CallResponse.model_validate(call)
+        return VoiceCallResponse.model_validate(call)
     except NotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
@@ -154,12 +154,12 @@ async def get_call(
         )
 
 
-@router.post("/calls", response_model=CallResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/calls", response_model=VoiceCallResponse, status_code=status.HTTP_201_CREATED)
 async def create_call(
-    request: CallCreateRequest,
+    request: VoiceCallCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> CallResponse:
+) -> VoiceCallResponse:
     """Initiate a new voice call."""
     try:
         from repositories.voice_call import VoiceCallRepository
@@ -184,7 +184,7 @@ async def create_call(
             call_id=call.id if hasattr(call, "id") else str(call),
             tenant_id=current_user.tenant_id,
         )
-        return CallResponse.model_validate(call)
+        return VoiceCallResponse.model_validate(call)
     except Exception as e:
         logger.error("create_call_failed", error=str(e))
         raise HTTPException(

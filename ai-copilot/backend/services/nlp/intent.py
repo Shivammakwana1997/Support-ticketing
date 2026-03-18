@@ -12,16 +12,12 @@ from integrations.openai_client import openai_client
 logger = structlog.get_logger(__name__)
 
 VALID_INTENTS = [
+    "fraud",
+    "otp_issue",
+    "password_reset",
+    "technical",
+    "general",
     "billing_inquiry",
-    "technical_support",
-    "account_management",
-    "product_info",
-    "complaint",
-    "general_question",
-    "cancellation",
-    "refund_request",
-    "shipping_inquiry",
-    "feedback",
 ]
 
 INTENT_FUNCTION_SCHEMA: dict[str, Any] = {

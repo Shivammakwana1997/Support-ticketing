@@ -6,7 +6,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from backend.models.enums import PriorityEnum, TicketStatusEnum
+from models.enums import PriorityEnum, TicketStatusEnum, TicketCategoryEnum
 
 
 class TicketCreate(BaseModel):
@@ -23,6 +23,7 @@ class TicketUpdate(BaseModel):
     subject: str | None = Field(None, min_length=1, max_length=500)
     status: TicketStatusEnum | None = None
     priority: PriorityEnum | None = None
+    category: TicketCategoryEnum | None = None
     assigned_agent_id: UUID | None = None
     tags: list[str] | None = None
     metadata_: dict[str, Any] | None = Field(None, alias="metadata")
@@ -36,6 +37,7 @@ class TicketResponse(BaseModel):
     subject: str
     status: TicketStatusEnum
     priority: PriorityEnum
+    category: TicketCategoryEnum
     assigned_agent_id: UUID | None
     sla_due_at: datetime | None
     sla_breach_at: datetime | None

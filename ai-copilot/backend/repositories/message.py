@@ -6,8 +6,8 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.models.message import Message
-from backend.repositories.base import BaseRepository
+from models.message import Message
+from repositories.base import BaseRepository
 
 
 class MessageRepository(BaseRepository[Message]):

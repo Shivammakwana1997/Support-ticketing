@@ -9,8 +9,8 @@ from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSON, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from backend.models.base import Base
-from backend.models.enums import DocumentStatusEnum
+from models.base import Base
+from models.enums import DocumentStatusEnum
 
 
 class KnowledgeDocument(Base):
