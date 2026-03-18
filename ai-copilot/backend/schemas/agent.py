@@ -5,7 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from backend.models.enums import AgentStatusEnum
+from models.enums import AgentStatusEnum
 
 
 class AgentCreate(BaseModel):

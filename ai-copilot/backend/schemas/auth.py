@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
 
-from backend.models.enums import UserRoleEnum
+from models.enums import UserRoleEnum
 
 
 class RegisterRequest(BaseModel):

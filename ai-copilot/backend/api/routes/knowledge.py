@@ -15,11 +15,11 @@ from core.exceptions import NotFoundError
 from models.user import User
 from schemas.knowledge import (
     DocumentResponse,
-    DocumentListResponse,
     IngestURLRequest,
     CollectionResponse,
-    CollectionCreateRequest,
+    CollectionCreate,
 )
+from schemas.common import PaginatedResponse
 from services.rag.ingestion import ingestion_service
 
 logger = structlog.get_logger(__name__)
@@ -27,7 +27,7 @@ logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/api/v1/knowledge", tags=["knowledge"])
 
 
-@router.get("/documents", response_model=DocumentListResponse)
+@router.get("/documents", response_model=PaginatedResponse)
 async def list_documents(
     collection_id: Optional[str] = Query(None),
     status_filter: Optional[str] = Query(None, alias="status"),
@@ -35,7 +35,7 @@ async def list_documents(
     page_size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> DocumentListResponse:
+) -> DocumentResponse:
     """List knowledge base documents."""
     try:
         from repositories.knowledge import KnowledgeDocumentRepository
@@ -54,7 +54,7 @@ async def list_documents(
             limit=page_size,
         )
 
-        return DocumentListResponse(
+        return DocumentResponse(
             items=[DocumentResponse.model_validate(d) for d in documents],
             total=total,
             page=page,
@@ -153,12 +153,12 @@ async def get_document(
         )
 
 
-@router.delete("/documents/{document_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/documents/{document_id}")
 async def delete_document(
     document_id: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> None:
+) -> dict:
     """Delete a document and its chunks from the knowledge base."""
     try:
         from repositories.knowledge import KnowledgeDocumentRepository, KnowledgeChunkRepository
@@ -242,7 +242,7 @@ async def list_collections(
 
 @router.post("/collections", response_model=CollectionResponse, status_code=status.HTTP_201_CREATED)
 async def create_collection(
-    request: CollectionCreateRequest,
+    request: CollectionCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> CollectionResponse:

@@ -1,4 +1,4 @@
-from backend.schemas.common import ErrorResponse, PaginatedResponse, PaginationParams, SuccessResponse
+from schemas.common import ErrorResponse, PaginatedResponse, PaginationParams, SuccessResponse
 
 __all__ = [
     "ErrorResponse",

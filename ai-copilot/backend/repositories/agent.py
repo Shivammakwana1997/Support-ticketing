@@ -6,9 +6,9 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.models.agent import Agent
-from backend.models.enums import AgentStatusEnum
-from backend.repositories.base import BaseRepository
+from models.agent import Agent
+from models.enums import AgentStatusEnum
+from repositories.base import BaseRepository
 
 
 class AgentRepository(BaseRepository[Agent]):

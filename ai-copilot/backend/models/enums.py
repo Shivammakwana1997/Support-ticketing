@@ -53,6 +53,16 @@ class UserRoleEnum(str, enum.Enum):
     AGENT = "agent"
     VIEWER = "viewer"
     API = "api"
+    FRAUD_SPECIALIST = "fraud_specialist"
+    LOAN_OFFICER = "loan_officer"
+
+
+class TicketCategoryEnum(str, enum.Enum):
+    FRAUD = "fraud"
+    OTP_ISSUE = "otp_issue"
+    PASSWORD_RESET = "password_reset"
+    TECHNICAL = "technical"
+    GENERAL = "general"
 
 
 class AgentStatusEnum(str, enum.Enum):

@@ -3,8 +3,8 @@ from __future__ import annotations
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.models.tenant import Tenant
-from backend.repositories.base import BaseRepository
+from models.tenant import Tenant
+from repositories.base import BaseRepository
 
 
 class TenantRepository(BaseRepository[Tenant]):

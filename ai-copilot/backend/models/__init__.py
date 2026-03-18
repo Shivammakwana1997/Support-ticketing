@@ -1,5 +1,5 @@
-from backend.models.base import Base
-from backend.models.enums import (
+from models.base import Base
+from models.enums import (
     AgentStatusEnum,
     ChannelEnum,
     ConversationStatusEnum,
@@ -9,19 +9,19 @@ from backend.models.enums import (
     TicketStatusEnum,
     UserRoleEnum,
 )
-from backend.models.tenant import Tenant
-from backend.models.user import User
-from backend.models.agent import Agent
-from backend.models.customer import Customer
-from backend.models.conversation import Conversation
-from backend.models.message import Message
-from backend.models.ticket import Ticket
-from backend.models.knowledge import KnowledgeChunk, KnowledgeDocument
-from backend.models.audit_log import AuditLog
-from backend.models.api_key import APIKey
-from backend.models.integration import IntegrationConfig
-from backend.models.voice_call import VoiceCall
-from backend.models.device_token import DeviceToken
+from models.tenant import Tenant
+from models.user import User
+from models.agent import Agent
+from models.customer import Customer
+from models.conversation import Conversation
+from models.message import Message
+from models.ticket import Ticket
+from models.knowledge import KnowledgeChunk, KnowledgeDocument
+from models.audit_log import AuditLog
+from models.api_key import APIKey
+from models.integration import IntegrationConfig
+from models.voice_call import VoiceCall
+from models.device_token import DeviceToken
 
 __all__ = [
     "Base",

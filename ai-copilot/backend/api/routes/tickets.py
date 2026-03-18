@@ -12,14 +12,11 @@ from api.dependencies.auth import get_current_user
 from api.dependencies.database import get_db
 from core.exceptions import NotFoundError, ForbiddenError
 from models.user import User
-from models.enums import TicketStatus, Priority
+from models.enums import TicketStatusEnum, PriorityEnum
 from schemas.ticket import (
     TicketCreate,
     TicketUpdate,
     TicketResponse,
-    TicketDetailResponse,
-    TicketSummaryResponse,
-    TicketRouteResponse,
 )
 from schemas.message import MessageCreate, MessageResponse
 from schemas.common import PaginatedResponse
@@ -29,11 +26,71 @@ logger = structlog.get_logger(__name__)
 
 router = APIRouter(prefix="/api/v1/tickets", tags=["tickets"])
 
+from pydantic import BaseModel
+import uuid
+
+class DemoTicketRequest(BaseModel):
+    message: str
+
+# In-memory storage for the demo since we don't have Supabase fully connected in the sandbox
+DEMO_TICKETS = []
+
+@router.post("/demo-create")
+async def create_demo_ticket(request: DemoTicketRequest):
+    """Mocks ticket creation with AI intent classification for the demo."""
+    from services.nlp.intent import intent_service
+    from models.enums import TicketCategoryEnum, PriorityEnum
+    from services.ticketing import _generate_ticket_number
+
+    try:
+        intent_result = await intent_service.detect_intent(request.message)
+        detected_intent = intent_result.intent
+    except Exception:
+        # Fallback if OpenAI fails in demo sandbox
+        if "fraud" in request.message.lower() or "stolen" in request.message.lower():
+            detected_intent = "fraud"
+        else:
+            detected_intent = "general"
+
+    category = TicketCategoryEnum.GENERAL
+    priority = PriorityEnum.MEDIUM
+
+    if detected_intent == "fraud":
+        priority = PriorityEnum.URGENT
+        category = TicketCategoryEnum.FRAUD
+    elif detected_intent == "otp_issue":
+        priority = PriorityEnum.HIGH
+        category = TicketCategoryEnum.OTP_ISSUE
+    elif detected_intent == "password_reset":
+        priority = PriorityEnum.HIGH
+        category = TicketCategoryEnum.PASSWORD_RESET
+    elif detected_intent == "technical":
+        priority = PriorityEnum.MEDIUM
+        category = TicketCategoryEnum.TECHNICAL
+
+    ticket = {
+        "id": str(uuid.uuid4()),
+        "ticket_number": _generate_ticket_number(),
+        "subject": request.message,
+        "category": category,
+        "priority": priority,
+        "status": "open"
+    }
+
+    DEMO_TICKETS.insert(0, ticket)
+    return ticket
+
+@router.get("/demo-list")
+async def list_demo_tickets():
+    """Returns the mocked demo tickets."""
+    return DEMO_TICKETS
+
+
 
 @router.get("", response_model=PaginatedResponse)
 async def list_tickets(
-    status_filter: Optional[TicketStatus] = Query(None, alias="status"),
-    priority: Optional[Priority] = Query(None),
+    status_filter: Optional[TicketStatusEnum] = Query(None, alias="status"),
+    priority: Optional[PriorityEnum] = Query(None),
     assigned_to: Optional[str] = Query(None),
     customer_id: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
@@ -94,7 +151,7 @@ async def create_ticket(
         )
 
 
-@router.get("/{ticket_id}", response_model=TicketDetailResponse)
+@router.get("/{ticket_id}", response_model=TicketResponse)
 async def get_ticket(
     ticket_id: str,
     db: AsyncSession = Depends(get_db),
@@ -218,6 +275,11 @@ async def add_ticket_message(
         )
 
 
+from pydantic import BaseModel
+
+class TicketSummaryResponse(BaseModel):
+    summary: str
+
 @router.get("/{ticket_id}/summary", response_model=TicketSummaryResponse)
 async def get_ticket_summary(
     ticket_id: str,
@@ -241,6 +303,9 @@ async def get_ticket_summary(
             detail="Failed to generate ticket summary",
         )
 
+
+class TicketRouteResponse(BaseModel):
+    assigned_agent_id: str | None
 
 @router.post("/{ticket_id}/route", response_model=TicketRouteResponse)
 async def route_ticket(

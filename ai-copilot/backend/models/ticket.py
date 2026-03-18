@@ -8,8 +8,8 @@ from sqlalchemy import DateTime, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import JSON, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from backend.models.base import Base
-from backend.models.enums import PriorityEnum, TicketStatusEnum
+from models.base import Base
+from models.enums import TicketStatusEnum, PriorityEnum, TicketCategoryEnum
 
 
 class Ticket(Base):
@@ -30,6 +30,9 @@ class Ticket(Base):
     )
     priority: Mapped[PriorityEnum] = mapped_column(
         default=PriorityEnum.MEDIUM, nullable=False
+    )
+    category: Mapped[TicketCategoryEnum] = mapped_column(
+        default=TicketCategoryEnum.GENERAL, nullable=False
     )
     assigned_agent_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("agents.id", ondelete="SET NULL")

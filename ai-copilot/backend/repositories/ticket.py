@@ -7,9 +7,9 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.models.enums import TicketStatusEnum
-from backend.models.ticket import Ticket
-from backend.repositories.base import BaseRepository
+from models.enums import TicketStatusEnum
+from models.ticket import Ticket
+from repositories.base import BaseRepository
 
 
 class TicketRepository(BaseRepository[Ticket]):

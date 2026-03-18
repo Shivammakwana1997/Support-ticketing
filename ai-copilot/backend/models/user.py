@@ -7,8 +7,8 @@ from sqlalchemy import Boolean, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSON, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from backend.models.base import Base
-from backend.models.enums import UserRoleEnum
+from models.base import Base
+from models.enums import UserRoleEnum
 
 
 class User(Base):

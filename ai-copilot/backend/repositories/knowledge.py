@@ -6,8 +6,8 @@ from uuid import UUID
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.models.knowledge import KnowledgeChunk, KnowledgeDocument
-from backend.repositories.base import BaseRepository
+from models.knowledge import KnowledgeChunk, KnowledgeDocument
+from repositories.base import BaseRepository
 
 
 class KnowledgeDocumentRepository(BaseRepository[KnowledgeDocument]):

@@ -6,7 +6,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, HttpUrl
 
-from backend.models.enums import DocumentStatusEnum
+from models.enums import DocumentStatusEnum
 
 
 class DocumentCreate(BaseModel):

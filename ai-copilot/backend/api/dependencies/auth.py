@@ -6,10 +6,10 @@ from uuid import UUID
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.api.dependencies.database import get_db
-from backend.core.security import get_current_user as _get_current_user
-from backend.models.enums import UserRoleEnum
-from backend.repositories.user import UserRepository
+from api.dependencies.database import get_db
+from core.security import get_current_user as _get_current_user
+from models.enums import UserRoleEnum
+from repositories.user import UserRepository
 
 
 async def get_current_user(
@@ -56,6 +56,25 @@ async def get_current_agent(
         )
     return current_user
 
+
+async def require_admin(
+    current_user: dict[str, Any] = Depends(get_current_user),
+) -> dict[str, Any]:
+    from core.exceptions import ForbiddenError
+    from models.enums import UserRoleEnum
+    # Because get_current_user returns a dict with "role": user.role.value
+    if current_user.get("role") != UserRoleEnum.ADMIN.value:
+        raise ForbiddenError("Admin privileges required.")
+    # Return a mocked User object because some routes expect `current_user: User`
+    from models.user import User
+    user_obj = User(
+        id=UUID(current_user["id"]),
+        tenant_id=UUID(current_user["tenant_id"]),
+        email=current_user["email"],
+        role=UserRoleEnum(current_user["role"]),
+        display_name=current_user["display_name"]
+    )
+    return user_obj
 
 async def require_tenant(
     current_user: dict[str, Any] = Depends(get_current_user),

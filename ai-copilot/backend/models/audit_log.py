@@ -8,7 +8,7 @@ from sqlalchemy import DateTime, String, func
 from sqlalchemy.dialects.postgresql import JSON, UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-from backend.models.base import Base
+from models.base import Base
 
 
 class AuditLog(Base):

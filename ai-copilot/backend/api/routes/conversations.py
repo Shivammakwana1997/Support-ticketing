@@ -12,12 +12,11 @@ from api.dependencies.auth import get_current_user
 from api.dependencies.database import get_db
 from core.exceptions import NotFoundError, ForbiddenError
 from models.user import User
-from models.enums import ConversationStatus, ChannelType
+from models.enums import ConversationStatusEnum, ChannelEnum
 from schemas.conversation import (
     ConversationCreate,
     ConversationUpdate,
     ConversationResponse,
-    ConversationDetailResponse,
 )
 from schemas.message import MessageCreate, MessageResponse
 from schemas.common import PaginatedResponse
@@ -30,9 +29,9 @@ router = APIRouter(prefix="/api/v1/conversations", tags=["conversations"])
 
 @router.get("", response_model=PaginatedResponse)
 async def list_conversations(
-    status_filter: Optional[ConversationStatus] = Query(None, alias="status"),
+    status_filter: Optional[ConversationStatusEnum] = Query(None, alias="status"),
     customer_id: Optional[str] = Query(None),
-    channel: Optional[ChannelType] = Query(None),
+    channel: Optional[ChannelEnum] = Query(None),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -87,12 +86,12 @@ async def create_conversation(
         )
 
 
-@router.get("/{conversation_id}", response_model=ConversationDetailResponse)
+@router.get("/{conversation_id}", response_model=ConversationResponse)
 async def get_conversation(
     conversation_id: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> ConversationDetailResponse:
+) -> ConversationResponse:
     """Get a conversation by ID with messages."""
     try:
         result = await conversation_service.get_conversation(
@@ -100,7 +99,7 @@ async def get_conversation(
             tenant_id=current_user.tenant_id,
             conversation_id=conversation_id,
         )
-        return ConversationDetailResponse(**result)
+        return ConversationResponse(**result)
     except NotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:

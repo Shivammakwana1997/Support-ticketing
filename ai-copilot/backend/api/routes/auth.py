@@ -8,12 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies.auth import get_current_user
 from api.dependencies.database import get_db
-from core.exceptions import AuthenticationError, ConflictError, NotFoundError
+from core.exceptions import UnauthorizedError, ConflictError, NotFoundError
 from models.user import User
 from schemas.auth import (
     LoginRequest,
     RegisterRequest,
-    RefreshTokenRequest,
     TokenResponse,
     UserResponse,
 )
@@ -65,7 +64,7 @@ async def login(
         )
         logger.info("user_logged_in", email=request.email)
         return tokens
-    except AuthenticationError as e:
+    except UnauthorizedError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(e),
@@ -91,7 +90,7 @@ async def refresh_token(
             refresh_token=request.refresh_token,
         )
         return tokens
-    except AuthenticationError as e:
+    except UnauthorizedError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(e),

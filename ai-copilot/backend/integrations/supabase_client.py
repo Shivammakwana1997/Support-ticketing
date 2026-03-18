@@ -15,7 +15,7 @@ from typing import Any, Optional
 
 from supabase import AsyncClient, create_client
 
-from backend.core.config import settings
+from core.config import settings
 
 # SQLAlchemy Async Engine (for existing database operations)
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -55,7 +55,7 @@ async def get_supabase_client() -> AsyncClient:
     Get Supabase async client.
     
     Usage:
-        from backend.integrations.supabase_client import get_supabase_client
+        from integrations.supabase_client import get_supabase_client
         
         @app.get("/users")
         async def get_users(supabase: AsyncClient = Depends(get_supabase_client)):

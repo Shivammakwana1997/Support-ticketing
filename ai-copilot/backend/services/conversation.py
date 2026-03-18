@@ -13,14 +13,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.exceptions import ForbiddenError, NotFoundError
 from models.conversation import Conversation
-from models.enums import ChannelType, ConversationStatus, SenderType
+from models.enums import ChannelEnum, ConversationStatusEnum, SenderTypeEnum
 from models.message import Message
 from repositories.conversation import ConversationRepository
 from repositories.message import MessageRepository
 from schemas.common import PaginatedResponse
 from schemas.conversation import (
     ConversationCreate,
-    ConversationListParams,
     ConversationUpdate,
 )
 from schemas.message import MessageCreate
@@ -37,15 +36,14 @@ class ConversationService:
     """
 
     def __init__(self) -> None:
-        self.conversation_repo = ConversationRepository()
-        self.message_repo = MessageRepository()
+        pass
 
     async def create_conversation(
         self,
         db: AsyncSession,
         tenant_id: str,
         customer_id: str,
-        channel: ChannelType,
+        channel: ChannelEnum,
         metadata: dict | None = None,
     ) -> Conversation:
         """Create a new conversation.
@@ -75,7 +73,7 @@ class ConversationService:
                 tenant_id=tenant_id,
                 customer_id=customer_id,
                 channel=channel,
-                status=ConversationStatus.OPEN,
+                status=ConversationStatusEnum.OPEN,
                 metadata=metadata or {},
             )
 
@@ -167,9 +165,9 @@ class ConversationService:
         self,
         db: AsyncSession,
         tenant_id: str,
-        status: ConversationStatus | None = None,
+        status: ConversationStatusEnum | None = None,
         customer_id: str | None = None,
-        channel: ChannelType | None = None,
+        channel: ChannelEnum | None = None,
         page: int = 1,
         page_size: int = 20,
     ) -> PaginatedResponse:
@@ -305,10 +303,10 @@ class ConversationService:
         db: AsyncSession,
         tenant_id: str,
         conversation_id: str,
-        sender_type: SenderType,
+        sender_type: SenderTypeEnum,
         sender_id: str,
         content: str,
-        channel: ChannelType | None = None,
+        channel: ChannelEnum | None = None,
     ) -> Message:
         """Add a message to an existing conversation.
 
@@ -429,7 +427,7 @@ class ConversationService:
 
             now = datetime.datetime.now(datetime.timezone.utc)
             update_data = ConversationUpdate(
-                status=ConversationStatus.CLOSED,
+                status=ConversationStatusEnum.CLOSED,
                 closed_at=now,
             )
             conversation = await self.conversation_repo.update(

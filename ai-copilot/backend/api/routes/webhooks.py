@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies.database import get_db
 from core.config import settings
-from models.enums import ChannelType, SenderType
+from models.enums import ChannelEnum, SenderTypeEnum
 from services.conversation import conversation_service
 
 logger = structlog.get_logger(__name__)
@@ -63,7 +63,7 @@ async def twilio_webhook(
         message_sid = body.get("MessageSid", "")
 
         # Determine channel
-        channel = ChannelType.WHATSAPP if "whatsapp:" in from_number else ChannelType.SMS
+        channel = ChannelEnum.WHATSAPP if "whatsapp:" in from_number else ChannelEnum.SMS
         clean_from = from_number.replace("whatsapp:", "")
 
         if not message_body:
@@ -115,7 +115,7 @@ async def twilio_webhook(
             db=db,
             tenant_id=tenant_id,
             conversation_id=conversation_id,
-            sender_type=SenderType.CUSTOMER,
+            sender_type=SenderTypeEnum.CUSTOMER,
             sender_id=customer_id,
             content=message_body,
             channel=channel,
@@ -186,7 +186,7 @@ async def email_webhook(
             db=db,
             tenant_id=tenant_id,
             customer_id=customer_id,
-            channel=ChannelType.EMAIL,
+            channel=ChannelEnum.EMAIL,
             metadata={"from_email": from_email, "to_email": to_email, "subject": subject},
         )
         conversation_id = str(conv.id) if hasattr(conv, "id") else str(conv)
@@ -196,10 +196,10 @@ async def email_webhook(
             db=db,
             tenant_id=tenant_id,
             conversation_id=conversation_id,
-            sender_type=SenderType.CUSTOMER,
+            sender_type=SenderTypeEnum.CUSTOMER,
             sender_id=customer_id,
             content=content,
-            channel=ChannelType.EMAIL,
+            channel=ChannelEnum.EMAIL,
         )
 
         # Create ticket from email
@@ -311,7 +311,7 @@ async def slack_webhook(
                             db,
                             tenant_id=tenant_id,
                             customer_id=user_id,
-                            channel=ChannelType.SLACK,
+                            channel=ChannelEnum.SLACK,
                         )
 
                         if existing:
@@ -321,7 +321,7 @@ async def slack_webhook(
                                 db=db,
                                 tenant_id=tenant_id,
                                 customer_id=user_id,
-                                channel=ChannelType.SLACK,
+                                channel=ChannelEnum.SLACK,
                                 metadata={"slack_channel": channel_id, "slack_user": user_id},
                             )
                             conversation_id = str(conv.id) if hasattr(conv, "id") else str(conv)
@@ -334,10 +334,10 @@ async def slack_webhook(
                         db=db,
                         tenant_id=tenant_id,
                         conversation_id=conversation_id,
-                        sender_type=SenderType.CUSTOMER,
+                        sender_type=SenderTypeEnum.CUSTOMER,
                         sender_id=user_id,
                         content=text,
-                        channel=ChannelType.SLACK,
+                        channel=ChannelEnum.SLACK,
                     )
 
                     logger.info(
@@ -388,7 +388,7 @@ async def teams_webhook(
                     db=db,
                     tenant_id=tenant_id,
                     customer_id=user_id,
-                    channel=ChannelType.TEAMS,
+                    channel=ChannelEnum.TEAMS,
                     metadata={
                         "teams_conversation_id": conv_id_teams,
                         "teams_user_name": user_name,
@@ -400,10 +400,10 @@ async def teams_webhook(
                     db=db,
                     tenant_id=tenant_id,
                     conversation_id=conversation_id,
-                    sender_type=SenderType.CUSTOMER,
+                    sender_type=SenderTypeEnum.CUSTOMER,
                     sender_id=user_id,
                     content=text,
-                    channel=ChannelType.TEAMS,
+                    channel=ChannelEnum.TEAMS,
                 )
 
                 logger.info(

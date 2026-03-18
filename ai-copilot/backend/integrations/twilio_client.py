@@ -6,8 +6,8 @@ from urllib.parse import urlencode
 
 from twilio.rest import Client as TwilioSDKClient
 
-from backend.core.config import settings
-from backend.core.logging import get_logger
+from core.config import settings
+from core.logging import get_logger
 
 logger = get_logger(__name__)
 

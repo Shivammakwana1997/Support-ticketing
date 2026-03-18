@@ -13,15 +13,14 @@ import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
-from core.exceptions import AuthenticationError, ConflictError, NotFoundError
+from core.exceptions import UnauthorizedError, ConflictError, NotFoundError
 from core.security import (
     create_access_token,
-    create_refresh_token,
-    decode_token,
+    decode_access_token,
     hash_password,
     verify_password,
 )
-from models.enums import UserRole
+from models.enums import UserRoleEnum
 from models.user import User
 from repositories.user import UserRepository
 from schemas.auth import LoginRequest, TokenResponse
@@ -43,7 +42,7 @@ class AuthService:
         email: str,
         password: str,
         display_name: str,
-        role: UserRole = UserRole.AGENT,
+        role: UserRoleEnum = UserRoleEnum.AGENT,
     ) -> User:
         """Register a new user within a tenant.
 
@@ -60,7 +59,7 @@ class AuthService:
         display_name:
             Human-readable name shown in the UI.
         role:
-            The role to assign. Defaults to ``UserRole.AGENT``.
+            The role to assign. Defaults to ``UserRoleEnum.AGENT``.
 
         Returns
         -------
@@ -128,7 +127,7 @@ class AuthService:
 
         Raises
         ------
-        AuthenticationError
+        UnauthorizedError
             If the email is not found or the password does not match.
         """
         log = logger.bind(email=email)
@@ -139,16 +138,16 @@ class AuthService:
 
         if user is None:
             log.warning("auth.login.failed", reason="user_not_found")
-            raise AuthenticationError("Invalid email or password.")
+            raise UnauthorizedError("Invalid email or password.")
 
         if not verify_password(password, user.hashed_password):
             log.warning("auth.login.failed", reason="invalid_password", user_id=user.id)
-            raise AuthenticationError("Invalid email or password.")
+            raise UnauthorizedError("Invalid email or password.")
 
         token_payload = {
             "sub": str(user.id),
             "tenant_id": str(user.tenant_id),
-            "role": user.role.value if isinstance(user.role, UserRole) else user.role,
+            "role": user.role.value if isinstance(user.role, UserRoleEnum) else user.role,
         }
 
         access_token: str = create_access_token(data=token_payload)
@@ -158,7 +157,6 @@ class AuthService:
 
         return TokenResponse(
             access_token=access_token,
-            refresh_token=refresh,
             token_type="bearer",
             expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         )
@@ -188,7 +186,7 @@ class AuthService:
 
         Raises
         ------
-        AuthenticationError
+        UnauthorizedError
             If the refresh token is invalid, expired, or the referenced
             user no longer exists.
         """
@@ -196,27 +194,27 @@ class AuthService:
         log.info("auth.refresh_token.started")
 
         try:
-            payload: dict = decode_token(refresh_token)
+            payload: dict = decode_access_token(refresh_token)
         except Exception as exc:
             log.warning("auth.refresh_token.failed", reason="invalid_token", error=str(exc))
-            raise AuthenticationError("Invalid or expired refresh token.") from exc
+            raise UnauthorizedError("Invalid or expired refresh token.") from exc
 
         user_id: Optional[str] = payload.get("sub")
         if user_id is None:
             log.warning("auth.refresh_token.failed", reason="missing_sub_claim")
-            raise AuthenticationError("Invalid refresh token payload.")
+            raise UnauthorizedError("Invalid refresh token payload.")
 
         repo = UserRepository(db)
         user: Optional[User] = await repo.get_by_id(user_id)
 
         if user is None:
             log.warning("auth.refresh_token.failed", reason="user_not_found", user_id=user_id)
-            raise AuthenticationError("User associated with this token no longer exists.")
+            raise UnauthorizedError("User associated with this token no longer exists.")
 
         token_payload = {
             "sub": str(user.id),
             "tenant_id": str(user.tenant_id),
-            "role": user.role.value if isinstance(user.role, UserRole) else user.role,
+            "role": user.role.value if isinstance(user.role, UserRoleEnum) else user.role,
         }
 
         new_access: str = create_access_token(data=token_payload)
@@ -226,7 +224,6 @@ class AuthService:
 
         return TokenResponse(
             access_token=new_access,
-            refresh_token=new_refresh,
             token_type="bearer",
             expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         )
@@ -256,7 +253,7 @@ class AuthService:
 
         Raises
         ------
-        AuthenticationError
+        UnauthorizedError
             If the token is invalid, expired, or the user cannot be found.
         """
         log = logger.bind()
@@ -266,12 +263,12 @@ class AuthService:
             payload: dict = decode_token(token)
         except Exception as exc:
             log.warning("auth.get_current_user.failed", reason="invalid_token", error=str(exc))
-            raise AuthenticationError("Could not validate credentials.") from exc
+            raise UnauthorizedError("Could not validate credentials.") from exc
 
         user_id: Optional[str] = payload.get("sub")
         if user_id is None:
             log.warning("auth.get_current_user.failed", reason="missing_sub_claim")
-            raise AuthenticationError("Invalid token payload.")
+            raise UnauthorizedError("Invalid token payload.")
 
         repo = UserRepository(db)
         user: Optional[User] = await repo.get_by_id(user_id)
@@ -282,7 +279,7 @@ class AuthService:
                 reason="user_not_found",
                 user_id=user_id,
             )
-            raise AuthenticationError("User not found or has been deactivated.")
+            raise UnauthorizedError("User not found or has been deactivated.")
 
         log.info("auth.get_current_user.completed", user_id=user.id)
         return user

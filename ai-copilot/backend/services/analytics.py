@@ -7,7 +7,7 @@ import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.exceptions import NotFoundError
-from models.enums import ConversationStatus, TicketStatus
+from models.enums import ConversationStatusEnum, TicketStatusEnum
 from repositories.agent import AgentRepository
 from repositories.conversation import ConversationRepository
 from repositories.ticket import TicketRepository
@@ -56,7 +56,7 @@ class AnalyticsService:
             ticket_repo.count_by_status,  # type: ignore[attr-defined]
             db,
             tenant_id,
-            status=TicketStatus.OPEN,
+            status=TicketStatusEnum.OPEN,
             start_date=start_date,
             end_date=end_date,
             default=0,
@@ -66,7 +66,7 @@ class AnalyticsService:
             ticket_repo.count_by_status,  # type: ignore[attr-defined]
             db,
             tenant_id,
-            status=TicketStatus.RESOLVED,
+            status=TicketStatusEnum.RESOLVED,
             start_date=start_date,
             end_date=end_date,
             default=0,
@@ -96,7 +96,7 @@ class AnalyticsService:
             conversation_repo.count_by_status,  # type: ignore[attr-defined]
             db,
             tenant_id,
-            status=ConversationStatus.ACTIVE,
+            status=ConversationStatusEnum.ACTIVE,
             start_date=start_date,
             end_date=end_date,
             default=0,
@@ -205,7 +205,7 @@ class AnalyticsService:
                 db,
                 tenant_id,
                 agent_id=agent_id,
-                status=TicketStatus.RESOLVED,
+                status=TicketStatusEnum.RESOLVED,
                 start_date=start_date,
                 end_date=end_date,
                 default=0,

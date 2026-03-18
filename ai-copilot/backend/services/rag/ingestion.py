@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
 from repositories.knowledge import KnowledgeDocumentRepository, KnowledgeChunkRepository
-from models.enums import DocumentStatus
+from models.enums import DocumentStatusEnum
 
 logger = structlog.get_logger(__name__)
 
@@ -26,8 +26,7 @@ class IngestionService:
     """Handles document ingestion: upload, chunking, embedding, and storage."""
 
     def __init__(self) -> None:
-        self.doc_repo = KnowledgeDocumentRepository()
-        self.chunk_repo = KnowledgeChunkRepository()
+        pass
 
     async def ingest_document(
         self,
@@ -65,7 +64,7 @@ class IngestionService:
                 "source_url": file_path_or_url if source_type == "url" else None,
                 "file_path": file_path_or_url if source_type == "file" else None,
                 "collection_id": collection_id,
-                "status": DocumentStatus.PENDING,
+                "status": DocumentStatusEnum.PENDING,
                 "metadata_": metadata or {},
                 "created_at": datetime.now(timezone.utc),
             },
@@ -124,7 +123,7 @@ class IngestionService:
         await self.doc_repo.update(
             db,
             document_id,
-            {"status": DocumentStatus.PROCESSING},
+            {"status": DocumentStatusEnum.PROCESSING},
         )
 
         try:
@@ -159,7 +158,7 @@ class IngestionService:
                 await self.doc_repo.update(
                     db,
                     document_id,
-                    {"status": DocumentStatus.READY, "chunk_count": 0},
+                    {"status": DocumentStatusEnum.READY, "chunk_count": 0},
                 )
                 return 0
 
@@ -194,7 +193,7 @@ class IngestionService:
                 db,
                 document_id,
                 {
-                    "status": DocumentStatus.READY,
+                    "status": DocumentStatusEnum.READY,
                     "chunk_count": len(chunk_records),
                     "processed_at": datetime.now(timezone.utc),
                 },
@@ -217,7 +216,7 @@ class IngestionService:
                 db,
                 document_id,
                 {
-                    "status": DocumentStatus.FAILED,
+                    "status": DocumentStatusEnum.FAILED,
                     "error_message": str(e),
                 },
             )
